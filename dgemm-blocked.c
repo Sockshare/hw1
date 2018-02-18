@@ -15,7 +15,7 @@
 
 const char* dgemm_desc = "Simple blocked dgemm.";
 #if !defined(BLOCK_SIZE)
-#define BLOCK_SIZE 32//Play around with the block size
+#define BLOCK_SIZE 64//Play around with the block size
 #endif
 
 #define min(a,b) (((a)<(b))?(a):(b))
@@ -61,7 +61,6 @@ static void do_blockFast (int lda, int M, int N, int K, double* A, double* B, do
             /* Compute C(i,j) */
             double cij = C[i+j*lda];
 
-
             for (int k = 0; k < K; k+=2){
 
                 cij += A[i+k*lda] * B[k+j*lda];
@@ -96,12 +95,14 @@ void square_dgemm (int lda, double* A, double* B, double* C)
                 //if block is not a square do:
                 
                 /* Perform individual block dgemm */
-                if(M !=BLOCK_SIZE || N !=BLOCK_SIZE  || K !=BLOCK_SIZE ){
-                    //loop unroll inside here
+                if(M !=BLOCK_SIZE || N !=BLOCK_SIZE  || K !=BLOCK_SIZE ){//test if the matrix is a square
+                    //loop unroll inside here if the matrix is a square
 
                     do_blockFast(lda, M, N, K, A + i + k * lda, B + k + j * lda, C + i + j * lda);
                 }
                 else {
+                    //Unroll matrix if the size != even
+                    //eg: 3x3, 5x5, ect.
                     do_block(lda, M, N, K, A + i + k * lda, B + k + j * lda, C + i + j * lda);
                 }
             }
